@@ -40,7 +40,7 @@ from detective.analyzer import (
 )
 
 WEB_DIR = Path(__file__).resolve().parent / "web"
-PORT = 8080
+PORT = 8585
 
 
 class DetectiveHandler(SimpleHTTPRequestHandler):
