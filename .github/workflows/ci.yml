@@ -1,0 +1,82 @@
+name: Failed Build Detective CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: "Simulate a specific pipeline failure mode"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - dependency
+          - build
+          - test
+
+env:
+  SIMULATE_FAILURE: ${{ github.event.inputs.simulate_failure || 'none' }}
+  IMAGE_NAME: failed-build-detective
+
+jobs:
+  ci-pipeline:
+    name: Build, Test & Root Cause Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository source code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Set up Python runner host environment for detective analyzer
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # Step 2: Build and run the Docker container, piping all logs to build.log
+      - name: Build and Run Docker Container
+        id: docker_pipeline
+        continue-on-error: true
+        run: |
+          echo "=========================================================="
+          echo " Starting CI Container Pipeline"
+          echo " Active SIMULATE_FAILURE Mode: ${SIMULATE_FAILURE}"
+          echo "=========================================================="
+
+          set -o pipefail
+          {
+            echo "=== Step 2A: Building Docker Image ==="
+            docker build \
+              --build-arg SIMULATE_FAILURE="${SIMULATE_FAILURE}" \
+              -t "${IMAGE_NAME}:latest" . && \
+            echo "=== Step 2B: Running Automated Tests Inside Container ===" && \
+            docker run --rm \
+              -e SIMULATE_FAILURE="${SIMULATE_FAILURE}" \
+              "${IMAGE_NAME}:latest"
+          } 2>&1 | tee build.log
+
+      # Step 3: Run the Failed Build Detective analyzer and post Markdown report to Summary
+      - name: Run Failed Build Detective
+        if: always()
+        run: |
+          echo "Executing Failed Build Detective on build.log..."
+          python detective/analyzer.py build.log >> $GITHUB_STEP_SUMMARY
+
+      # Step 4: Enforce failure status if build or tests failed, turning commit status red
+      - name: Enforce Pipeline Exit Status
+        if: always()
+        run: |
+          if [ "${{ steps.docker_pipeline.outcome }}" != "success" ]; then
+            echo "::error::Pipeline failed during Docker build or test execution. Review the Failed Build Detective report above for root cause diagnosis and remediation steps."
+            exit 1
+          fi
+          echo "Pipeline completed successfully with zero defects."
