@@ -14,6 +14,18 @@ import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 
+# Ensure stdout and stderr handle UTF-8 cleanly on Windows consoles
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Add project root to path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -111,12 +123,12 @@ def start_server(port: int = PORT) -> None:
     url = f"http://localhost:{current_port}"
 
     print("=" * 68)
-    print(" 🕵️   FAILED BUILD DETECTIVE - INTERACTIVE WEB DASHBOARD")
+    print(" [FAILED BUILD DETECTIVE] Interactive Web Dashboard")
     print("=" * 68)
-    print(f"  ➜ Dashboard URL:  {url}")
-    print(f"  ➜ Web Root:       {WEB_DIR}")
-    print("  ➜ Status:         Ready and listening for pipeline logs")
-    print("  ➜ Press Ctrl+C in this terminal to stop the server")
+    print(f"  -> Dashboard URL:  {url}")
+    print(f"  -> Web Assets:     {WEB_DIR}")
+    print("  -> Status:         Ready and listening for pipeline logs")
+    print("  -> Press Ctrl+C in this terminal to stop the server")
     print("=" * 68)
 
     # Open browser automatically after 1 second
