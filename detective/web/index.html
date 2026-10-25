@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Failed Build Detective - Intelligent CI/CD failure analysis, root cause diagnosis, and automated remediation dashboard for Docker and Python pipelines.">
+  <meta name="theme-color" content="#0a0e17">
+  <title>Failed Build Detective | Intelligent CI Pipeline Diagnostics</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-background">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <path d="M11 8v6"></path>
+            <path d="M8 11h6"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Failed Build Detective</h1>
+          <p class="brand-subtitle">Autonomous CI/CD Root Cause Analysis Engine</p>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="status-badge" id="engineStatus">
+          <span class="status-dot"></span>
+          <span>Engine Active (Python 3.10+)</span>
+        </div>
+        <a href="https://github.com/rawatkanak/Dev-Docker_project" target="_blank" rel="noopener noreferrer" class="btn-secondary" id="githubLink">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span>GitHub Repo</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Preset Simulator Toolbar -->
+    <section class="simulator-bar">
+      <div class="bar-label">
+        <span class="icon">⚡</span>
+        <span>Quick CI Failure Simulations:</span>
+      </div>
+      <div class="preset-buttons">
+        <button type="button" class="preset-btn" id="presetDep" data-preset="dependency">
+          <span class="preset-icon">📦</span> Dependency Issue
+        </button>
+        <button type="button" class="preset-btn" id="presetBuild" data-preset="build">
+          <span class="preset-icon">🔨</span> Build / Syntax Error
+        </button>
+        <button type="button" class="preset-btn" id="presetTest" data-preset="test">
+          <span class="preset-icon">🧪</span> Test Assertion Error
+        </button>
+        <button type="button" class="preset-btn" id="presetPass" data-preset="pass">
+          <span class="preset-icon">✅</span> Clean Passing Run
+        </button>
+        <button type="button" class="preset-btn btn-clear" id="presetClear">
+          <span class="preset-icon">🗑️</span> Clear Log
+        </button>
+      </div>
+    </section>
+
+    <!-- Workspace Grid -->
+    <div class="workspace-grid">
+      <!-- Left Panel: Log Input & File Upload -->
+      <section class="panel input-panel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-icon">📝</span>
+            <h2>Pipeline Build Log</h2>
+          </div>
+          <div class="panel-controls">
+            <label for="logFileInput" class="btn-file-upload" title="Upload a build.log file">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload Log
+              <input type="file" id="logFileInput" accept=".log,.txt" hidden>
+            </label>
+            <span class="line-counter" id="lineCount">0 lines</span>
+          </div>
+        </div>
+
+        <div class="editor-wrapper">
+          <textarea 
+            id="logInput" 
+            placeholder="Paste your raw Docker build or test output log here, drag & drop a build.log file, or click a Quick CI Simulation preset above..."
+            spellcheck="false"
+          ></textarea>
+        </div>
+
+        <div class="panel-footer">
+          <button type="button" class="btn-primary" id="analyzeBtn">
+            <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Investigate Pipeline Failure</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Right Panel: Detective Analysis Report -->
+      <section class="panel report-panel" id="reportPanel">
+        <div class="panel-header">
+          <div class="panel-title-group">
+            <span class="panel-icon">🕵️</span>
+            <h2>Detective Diagnosis Report</h2>
+          </div>
+          <div class="panel-controls" id="reportActions" style="display: none;">
+            <button type="button" class="btn-small" id="copyMarkdownBtn" title="Copy Markdown formatted report for GitHub Step Summary">
+              📋 Copy Markdown
+            </button>
+            <button type="button" class="btn-small" id="downloadReportBtn" title="Download report file">
+              💾 Download
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+          <div class="radar-scanner">
+            <div class="radar-circle circle-1"></div>
+            <div class="radar-circle circle-2"></div>
+            <div class="radar-circle circle-3"></div>
+            <div class="radar-sweep"></div>
+            <div class="radar-icon">🔍</div>
+          </div>
+          <h3>Awaiting Build Log Stream</h3>
+          <p>Paste build output on the left or select a failure scenario above to generate an instant root cause diagnosis.</p>
+        </div>
+
+        <!-- Populated Diagnostic Report -->
+        <div class="diagnostic-result" id="diagnosticResult" style="display: none;">
+          <!-- Category Card -->
+          <div class="category-card" id="categoryCard">
+            <div class="category-header">
+              <span class="category-tag" id="categoryTag">
+                <span class="cat-icon" id="catIcon">🚨</span>
+                <span id="catName">Category Name</span>
+              </span>
+              <span class="severity-badge" id="severityBadge">CRITICAL ROOT CAUSE</span>
+            </div>
+            <h3 class="category-headline" id="catHeadline">Summary of root cause goes here.</h3>
+          </div>
+
+          <!-- Error Message Banner -->
+          <div class="error-banner">
+            <div class="banner-title">
+              <span>⚠️ Exact Error Message</span>
+              <button type="button" class="copy-btn-inline" id="copyErrorMsgBtn" title="Copy error string">Copy</button>
+            </div>
+            <div class="error-message-text" id="errorMessageText"></div>
+          </div>
+
+          <!-- Extracted Log Snippet -->
+          <div class="log-block-card">
+            <div class="block-title">
+              <span>📋 Extracted Failure Context</span>
+              <span class="context-hint">Contextual traceback isolated by detective</span>
+            </div>
+            <pre class="log-block-content"><code id="errorSnippetText"></code></pre>
+          </div>
+
+          <!-- Remediation Guide -->
+          <div class="remediation-card">
+            <div class="remediation-title">
+              <span class="bulb-icon">💡</span>
+              <span>Actionable Remediation Steps</span>
+            </div>
+            <ul class="remediation-list" id="remediationList">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <p>Failed Build Detective CI System • Built for Autonomous Pipeline Reliability</p>
+      <div class="footer-meta">
+        <span>Docker • Python 3.10 • Pytest • GitHub Actions</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
